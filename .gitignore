@@ -1,0 +1,17 @@
+
+
+
+
+.vs
+.vscode
+.idea
+
+ignore
+
+/out
+
+vcpkg_installed
+
+
+# place to run/debug executable
+cwd
