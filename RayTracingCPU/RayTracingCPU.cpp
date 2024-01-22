@@ -4,13 +4,16 @@
 
 
 #include "RayTracingCPU.h"
+#include "Renderer.h"
 //#include <iostream>
 //#include <fstream>
 
 #include <fmt/core.h>
 #include <Magick++.h>
+#include <glm/glm.hpp>
 
-using namespace std;
+//using namespace std;
+
 
 
 class File {
@@ -24,7 +27,10 @@ public:
 
 
 struct PngPixel {
-	uint8_t rgb[3];
+	/*uint8_t rgb[3];*/
+	glm::u8vec3 rgb;
+	PngPixel() : rgb() {}
+	explicit PngPixel(glm::vec3 f_rgb) : rgb(f_rgb) {}
 };
 
 
@@ -43,10 +49,11 @@ int main(int argc, char** argv)
 	//uint8_t(*pix)[3] = new uint8_t[height * width][3];
 	PngPixel* pix = new PngPixel[height * width];
 
+	Renderer renderer{width, height};
 
 	for (uint32_t y = 0; y < height; y++) {
 		for (uint32_t x = 0; x < width; x++) {
-			pix[width * y + x] = { uint8_t(255. * x / width), uint8_t(255. * y / height), 0 };
+			pix[width * y + x] = PngPixel{ renderer.render(x, y) * 255.f };
 		}
 	}
 
@@ -57,6 +64,8 @@ int main(int argc, char** argv)
 	// Write the image to a file - change extension if you want a GIF or JPEG
 	image.write("result.png");
 	
+	// open image for viewing
+	system("start result.png");
 
 	return 0;
 }
