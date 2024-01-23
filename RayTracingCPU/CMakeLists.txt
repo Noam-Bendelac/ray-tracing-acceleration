@@ -8,7 +8,7 @@
 
 
 # Add source to this project's executable.
-add_executable (RayTracingCPU "RayTracingCPU.cpp" "Renderer.cpp")
+add_executable (RayTracingCPU "RayTracingCPU.cpp" "Renderer.cpp" "Scene.cpp" "Material.cpp" "Entity.cpp")
 
 
 find_package(fmt CONFIG REQUIRED)

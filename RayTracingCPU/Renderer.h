@@ -1,4 +1,9 @@
 
+#pragma once
+
+#include "Scene.h"
+
+
 #include <glm/glm.hpp>
 #include <optional>
 
@@ -20,20 +25,20 @@ class Renderer {
 private:
 	uint32_t width, height;
 
+	Scene& scene;
+
 	Camera camera{
-		.position = {0, -2, 0},
+		.position = {0, -6, 0},
 		.forwardDir = {0, 1, 0},
 		.upDir = {0, 0, 1},
 		.rightDir = {1, 0, 0}
 	};
 
 public:
-	Renderer(uint32_t width, uint32_t height) : width(width), height(height) { }
+	Renderer(uint32_t width, uint32_t height, Scene& scene) : width(width), height(height), scene(scene) { }
 
 	glm::vec3 render(uint32_t x, uint32_t y);
 
-private:
-	std::optional<Hit> raycast(glm::vec3 origin, glm::vec3 direction);
 
 };
 

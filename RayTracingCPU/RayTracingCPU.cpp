@@ -5,14 +5,12 @@
 
 #include "RayTracingCPU.h"
 #include "Renderer.h"
-//#include <iostream>
-//#include <fstream>
 
 #include <fmt/core.h>
 #include <Magick++.h>
 #include <glm/glm.hpp>
-
-//using namespace std;
+#include <memory>
+#include <cstdlib>
 
 
 
@@ -34,6 +32,28 @@ struct PngPixel {
 };
 
 
+float randF() {
+	return float(rand()) / RAND_MAX;
+}
+
+Scene initScene() {
+	Scene s;
+	auto mat = new DiffuseMaterial{ glm::vec3{1,1,0} };
+	
+	for (int i = 0; i < 20; ++i) {
+		s.entities.push_back(std::make_unique<Sphere>(
+			glm::vec3{ randF() * 10. - 5., randF() * 10. - 5., randF() * 10. - 5. },
+			1.f,
+			*mat
+		));
+	}
+
+	return s;
+}
+
+
+
+
 int main(int argc, char** argv)
 {
 	// Initialise ImageMagick library
@@ -41,15 +61,18 @@ int main(int argc, char** argv)
 
 	fmt::print("Hello\n");
 
+	srand(4);
 
-	uint32_t width = 256;
-	uint32_t height = 256;
+	uint32_t height = 480;
+	uint32_t width = uint32_t(height * (16./9.));
 
 
 	//uint8_t(*pix)[3] = new uint8_t[height * width][3];
 	PngPixel* pix = new PngPixel[height * width];
 
-	Renderer renderer{width, height};
+	Scene scene{ std::move(initScene()) };
+
+	Renderer renderer{width, height, scene};
 
 	for (uint32_t y = 0; y < height; y++) {
 		for (uint32_t x = 0; x < width; x++) {
