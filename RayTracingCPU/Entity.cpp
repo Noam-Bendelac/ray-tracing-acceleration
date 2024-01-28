@@ -11,7 +11,7 @@ using glm::vec3;
 
 
 
-std::optional<float> Sphere::raycast(Ray r) const {
+std::optional<float> Sphere::raycast(const Ray& r) const {
 	auto ro = r.origin, rd = r.direction;
 
 	// raycast
@@ -24,10 +24,16 @@ std::optional<float> Sphere::raycast(Ray r) const {
 		return std::nullopt;
 	}
 	else {
-		float t1 = (-b - sqrt(disc)) / (2 * a);
-		//vec3 p = ro + t1 * rd;
-
-		return t1;
+		float sqrtdisc = sqrt(disc);
+		float t1 = (-b - sqrtdisc) / (2 * a);
+		if (t1 > 0.0) {
+			return t1;
+		}
+		float t2 = (-b + sqrtdisc) / (2 * a);
+		if (t2 > 0.0) {
+			return t2;
+		}
+		return std::nullopt;
 	}
 }
 
@@ -40,3 +46,13 @@ SurfacePoint Sphere::surface(vec3 pos) const {
 	};
 }
 
+
+
+AABB Sphere::calcAABB() const {
+	return AABB{ center - vec3{radius}, center + vec3{radius} };
+}
+
+const AABB& Sphere::aabb() const {
+	//return AABB{ center - vec3{radius}, center + vec3{radius} };
+	return mAabb;
+}

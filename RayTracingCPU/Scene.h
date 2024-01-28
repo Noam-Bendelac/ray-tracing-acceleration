@@ -3,10 +3,12 @@
 
 
 #include "Entity.h"
+#include "OctTree.h"
 
 #include <vector>
 #include <optional>
 #include <memory>
+#include <functional>
 
 
 
@@ -15,6 +17,12 @@ struct Hit {
 	const Entity& entity;
 
 	auto operator<=>(const Hit& rhs) const { return t <=> rhs.t; }
+
+	Hit& operator=(const Hit& rhs) {
+		this->~Hit();
+		new (this) Hit(rhs);
+		return *this;
+	}
 };
 
 struct OptHit : public std::optional<Hit> {
@@ -30,13 +38,27 @@ struct OptHit : public std::optional<Hit> {
 };
 
 
+
+struct AABBAccessor {
+	const AABB& operator()(const std::reference_wrapper<const Entity>& rwe) {
+		return rwe.get().aabb();
+	}
+};
+
+
 class Scene {
 public:
 	std::vector<std::unique_ptr<Entity>> entities;
 
-	Scene() {}
+	Scene() : entities() { }
+	Scene(Scene&& s) : entities(std::move(s.entities)), tree(std::move(s.tree)) {}
 
-	OptHit raycast(Ray ray);
+	void setupAccelerationStructure();
+
+	OptHit raycast(const Ray& ray);
+
+private:
+	OctTree<std::reference_wrapper<const Entity>, AABBAccessor> tree{ AABB{glm::vec3{-20,-20,-20}, glm::vec3{20,20,20}} };
 };
 
 

@@ -12,6 +12,15 @@ using glm::vec3;
 
 
 
+void Scene::setupAccelerationStructure() {
+	for (const std::unique_ptr<Entity>& pe : entities) {
+		const Entity& e = *pe;
+		tree.insert(std::move(std::reference_wrapper<const Entity>(e)));
+		//tree.insert(e);
+	}
+}
+
+
 
 template<typename From, typename FromIter, typename To>
 class MappedIter {
@@ -46,23 +55,17 @@ public:
 
 
 
-OptHit Scene::raycast(Ray ray) {
-	
-	auto [hitsBegin, hitsEnd] = MappedIter<const std::unique_ptr<Entity>&, std::vector<std::unique_ptr<Entity>>::iterator, OptHit>::makeRange(
-		entities.begin(),
-		entities.end(),
-		[&ray](const std::unique_ptr<Entity>& e) { return OptHit{
-			e->raycast(ray)
-			.transform([&e](float t) { return Hit {.t = t, .entity = *e }; })
-		}; }
-	);
 
-	auto nearest = std::min_element(hitsBegin, hitsEnd);
-	if (nearest == hitsEnd) {
-		// no hits
-		return OptHit{ std::nullopt };
-	}
-	else {
-		return *nearest;
-	}
+OptHit Scene::raycast(const Ray& ray) {
+
+	OptHit nearest{ std::nullopt };
+
+	tree.raycastForEach(ray, [&ray, &nearest](auto e) {
+		OptHit hit{ e.get().raycast(ray).transform([&e](float t) { return Hit{.t = t, .entity = e.get()}; })};
+		if (hit < nearest) {
+			nearest = hit;
+		}
+	});
+
+	return nearest;
 }

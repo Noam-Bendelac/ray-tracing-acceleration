@@ -36,19 +36,24 @@ float randF() {
 	return float(rand()) / RAND_MAX;
 }
 
-Scene initScene() {
-	Scene s;
+void initScene(Scene& s) {
 	auto mat = new DiffuseMaterial{ glm::vec3{1,1,0} };
 	
-	for (int i = 0; i < 20; ++i) {
+	for (int i = 0; i < 700; ++i) {
 		s.entities.push_back(std::make_unique<Sphere>(
-			glm::vec3{ randF() * 10. - 5., randF() * 10. - 5., randF() * 10. - 5. },
-			1.f,
+			glm::vec3{ randF() * 16. - 8., randF() * 16. - 8., randF() * 16. - 8. },
+			0.5f,
 			*mat
 		));
 	}
 
-	return s;
+	s.entities.push_back(std::make_unique<Sphere>(
+		glm::vec3{ 0, 0, -100 },
+		100.f,
+		*mat
+	));
+
+	//return std::move(s);
 }
 
 
@@ -70,7 +75,9 @@ int main(int argc, char** argv)
 	//uint8_t(*pix)[3] = new uint8_t[height * width][3];
 	PngPixel* pix = new PngPixel[height * width];
 
-	Scene scene{ std::move(initScene()) };
+	Scene scene;
+	initScene(scene);
+	scene.setupAccelerationStructure();
 
 	Renderer renderer{width, height, scene};
 

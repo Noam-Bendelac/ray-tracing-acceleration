@@ -15,7 +15,7 @@ struct SurfacePoint {
 
 class Material {
 public:
-	virtual glm::vec3 shade(SurfacePoint p) = 0;
+	virtual glm::vec3 shade(const SurfacePoint& p) = 0;
 };
 
 class DiffuseMaterial : public Material {
@@ -25,7 +25,7 @@ public:
 
 	DiffuseMaterial(glm::vec3 baseColor) : baseColor(baseColor) { }
 
-	glm::vec3 shade(SurfacePoint p) override;
+	glm::vec3 shade(const SurfacePoint& p) override;
 };
 
 

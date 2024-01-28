@@ -27,7 +27,8 @@ vec3 Renderer::render(uint32_t x, uint32_t y) {
 	float aspect = float(width) / height;
 	// inverted sensor position like in a real camera
 	vec2 sensorPos2d = -ndc * vec2{ aspect, 1 };
-	vec3 sensorPos = camera.position - camera.forwardDir + glm::mat2x3{ camera.rightDir, camera.upDir } * sensorPos2d;
+	float focalLen = 1.8f;
+	vec3 sensorPos = camera.position - camera.forwardDir * focalLen + glm::mat2x3{ camera.rightDir, camera.upDir } * sensorPos2d;
 
 	// ray origin and direction
 	vec3 ro = camera.position;
@@ -37,11 +38,13 @@ vec3 Renderer::render(uint32_t x, uint32_t y) {
 
 
 	auto hit = scene.raycast(ray);
-	return hit.transform([&ray](Hit hit) {
-		return hit.entity.material.shade(
-			hit.entity.surface(ray.at(hit.t))
-		); 
-	}).value_or(vec3{ 0, 0, 0 });
+	return hit
+		.transform([&ray](Hit hit) {
+			return hit.entity.material.shade(
+				hit.entity.surface(ray.at(hit.t))
+			); 
+		})
+		.value_or(vec3{ 0, 0, 0 });
 }
 
 
