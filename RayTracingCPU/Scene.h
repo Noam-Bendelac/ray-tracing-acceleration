@@ -50,14 +50,15 @@ class Scene {
 public:
 	std::vector<std::unique_ptr<Entity>> entities;
 
-	Scene() : entities() { }
-	Scene(Scene&& s) : entities(std::move(s.entities)), tree(std::move(s.tree)) {}
+	Scene(bool acceleration) : entities(), acceleration(acceleration) { }
+	Scene(Scene&& s) : entities(std::move(s.entities)), tree(std::move(s.tree)), acceleration(s.acceleration) {}
 
 	void setupAccelerationStructure();
 
 	OptHit raycast(const Ray& ray);
 
 private:
+	bool acceleration;
 	OctTree<std::reference_wrapper<const Entity>, AABBAccessor> tree{ AABB{glm::vec3{-20,-20,-20}, glm::vec3{20,20,20}} };
 };
 

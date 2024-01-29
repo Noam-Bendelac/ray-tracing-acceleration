@@ -34,9 +34,12 @@ public:
 
 	void raycastForEach(const Ray& ray, const std::function<void(const T&)>& f) {
 		auto forEachT = [&ray, &f](const T& t) {
-			if (aabbAccessor(t).raycast(ray)) {
+			// this needs more research, but it seems so far that checking the AABB of the
+			// entity to filter some entities out, only to then raycast the entity itself,
+			// is slower than just yielding and raycasting all entities in the node
+			//if (aabbAccessor(t).raycast(ray)) {
 				f(t);
-			}
+			//}
 		};
 		std::function<void(const Node& n)> forEachN = [&ray, &f, &forEachT, &forEachN](const Node& n) {
 			if (n.aabb.raycast(ray)) {

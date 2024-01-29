@@ -28,7 +28,7 @@ private:
 	Scene& scene;
 
 	Camera camera{
-		.position = {0, -15, 2},
+		.position = {0, -15, 3},
 		.forwardDir = {0, 1, 0},
 		.upDir = {0, 0, 1},
 		.rightDir = {1, 0, 0}

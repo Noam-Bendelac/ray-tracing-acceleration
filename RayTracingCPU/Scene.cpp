@@ -13,10 +13,12 @@ using glm::vec3;
 
 
 void Scene::setupAccelerationStructure() {
-	for (const std::unique_ptr<Entity>& pe : entities) {
-		const Entity& e = *pe;
-		tree.insert(std::move(std::reference_wrapper<const Entity>(e)));
-		//tree.insert(e);
+	if (acceleration) {
+		for (const std::unique_ptr<Entity>& pe : entities) {
+			const Entity& e = *pe;
+			tree.insert(std::move(std::reference_wrapper<const Entity>(e)));
+			//tree.insert(e);
+		}
 	}
 }
 
@@ -60,12 +62,19 @@ OptHit Scene::raycast(const Ray& ray) {
 
 	OptHit nearest{ std::nullopt };
 
-	tree.raycastForEach(ray, [&ray, &nearest](auto e) {
-		OptHit hit{ e.get().raycast(ray).transform([&e](float t) { return Hit{.t = t, .entity = e.get()}; })};
+	auto forEntity = [&ray, &nearest](const Entity& e) {
+		OptHit hit{ e.raycast(ray).transform([&e](float t) { return Hit{.t = t, .entity = e}; }) };
 		if (hit < nearest) {
 			nearest = hit;
 		}
-	});
+	};
+
+	if (acceleration) {
+		tree.raycastForEach(ray, [&forEntity](auto const& e) { forEntity(e.get()); });
+	}
+	else {
+		std::for_each(entities.begin(), entities.end(), [&forEntity](auto const& e) { forEntity(*e); });
+	}
 
 	return nearest;
 }
