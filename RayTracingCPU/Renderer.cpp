@@ -33,21 +33,30 @@ vec3 Renderer::render(uint32_t x, uint32_t y) {
 	// ray origin and direction
 	vec3 ro = camera.position;
 	vec3 rd = normalize(ro - sensorPos);
-
+	
 	auto ray = Ray{ .origin = ro, .direction = rd };
 
 
-	auto hit = scene.raycast(ray);
-	return hit
-		.transform([&ray](Hit hit) {
-			return hit.entity.material.shade(
-				hit.entity.surface(ray.at(hit.t))
-			); 
-		})
-		.value_or(vec3{ 0, 0, 0 });
+	return renderRay(ray, 0);
 }
 
 
+vec3 Renderer::renderRay(Ray const& ray, uint32_t iterDepth) {
+	if (iterDepth > 5) {
+		return vec3{ 0.1 };
+	}
+	auto hit = scene.raycast(ray);
+	return hit
+		.transform([&ray, this, iterDepth](Hit hit) {
+			return hit.entity.material->shade(
+				hit.entity.surface(ray.at(hit.t)),
+				ray,
+				[this, iterDepth](Ray const& ray2) { return renderRay(ray2, iterDepth + 1); },
+				[this](Ray const& ray2) { return scene.raycast(ray2).transform([](Hit const& hit) { return hit.t; }); }
+			);
+		})
+		.value_or(vec3{ 0.1 });
+}
 
 
 

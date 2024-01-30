@@ -1,7 +1,11 @@
 
 #pragma once
 
+#include "Ray.h"
+
 #include <glm/glm.hpp>
+#include <functional>
+#include <optional>
 
 
 // like vertex attributes/varyings
@@ -15,7 +19,12 @@ struct SurfacePoint {
 
 class Material {
 public:
-	virtual glm::vec3 shade(const SurfacePoint& p) = 0;
+	virtual glm::vec3 shade(
+		const SurfacePoint& p,
+		const Ray& viewRay,
+		std::function<glm::vec3(Ray const&)> queryColor,
+		std::function<std::optional<bool>(Ray const&)> queryDepth
+	) = 0;
 };
 
 class DiffuseMaterial : public Material {
@@ -25,7 +34,26 @@ public:
 
 	DiffuseMaterial(glm::vec3 baseColor) : baseColor(baseColor) { }
 
-	glm::vec3 shade(const SurfacePoint& p) override;
+	glm::vec3 shade(
+		const SurfacePoint& p,
+		const Ray& viewRay,
+		std::function<glm::vec3(Ray const&)> queryColor,
+		std::function<std::optional<bool>(Ray const&)> queryDepth
+	) override;
+};
+
+class ReflectMaterial : public Material {
+public:
+	glm::vec3 specularColor;
+
+	ReflectMaterial(glm::vec3 specularColor) : specularColor(specularColor) { }
+
+	glm::vec3 shade(
+		const SurfacePoint& p,
+		const Ray& viewRay,
+		std::function<glm::vec3(Ray const&)> queryColor,
+		std::function<std::optional<bool>(Ray const&)> queryDepth
+	) override;
 };
 
 

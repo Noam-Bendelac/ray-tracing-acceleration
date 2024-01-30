@@ -26,9 +26,11 @@ std::optional<float> Sphere::raycast(const Ray& r) const {
 	else {
 		float sqrtdisc = sqrt(disc);
 		float t1 = (-b - sqrtdisc) / (2 * a);
+		// filter out negative t's (wrong side of ray)
 		if (t1 > 0.0) {
 			return t1;
 		}
+		// this allows backface intersection if ray starts inside sphere
 		float t2 = (-b + sqrtdisc) / (2 * a);
 		if (t2 > 0.0) {
 			return t2;

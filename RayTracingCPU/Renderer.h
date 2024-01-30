@@ -28,7 +28,7 @@ private:
 	Scene& scene;
 
 	Camera camera{
-		.position = {0, -15, 3},
+		.position = {0, -16, 3},
 		.forwardDir = {0, 1, 0},
 		.upDir = {0, 0, 1},
 		.rightDir = {1, 0, 0}
@@ -40,6 +40,8 @@ public:
 	glm::vec3 render(uint32_t x, uint32_t y);
 
 
+private:
+	glm::vec3 renderRay(Ray const& ray, uint32_t iterDepth);
 };
 
 

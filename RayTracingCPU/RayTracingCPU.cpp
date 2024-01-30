@@ -9,6 +9,7 @@
 #include <fmt/core.h>
 #include <Magick++.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/random.hpp>
 #include <memory>
 #include <cstdlib>
 #include <chrono>
@@ -30,7 +31,7 @@ struct PngPixel {
 	/*uint8_t rgb[3];*/
 	glm::u8vec3 rgb;
 	PngPixel() : rgb() {}
-	explicit PngPixel(glm::vec3 f_rgb) : rgb(f_rgb) {}
+	explicit PngPixel(glm::vec3 f_rgb) : rgb(glm::clamp(f_rgb, 0.f, 1.f) * 255.f) {}
 };
 
 
@@ -39,20 +40,27 @@ float randF() {
 }
 
 void initScene(Scene& s, uint32_t numEntities) {
-	auto mat = new DiffuseMaterial{ glm::vec3{1,1,0} };
+	// TODO scene cleanup function, maybe destructor, fix leak
+
+	//auto mat = std::make_shared<DiffuseMaterial>(glm::abs(glm::sphericalRand(1.f)));
 	
 	for (uint32_t i = 0; i < numEntities; ++i) {
 		s.entities.push_back(std::make_unique<Sphere>(
-			glm::vec3{ randF() * 16. - 8., randF() * 16. - 8., randF() * 10. - 2. },
-			4.f/powf(numEntities, 1.0f/3),
-			*mat
+			glm::vec3{ randF() * 16. - 8., randF() * 20. - 10., randF() * 10. - 2. },
+			4.f/powf(float(numEntities), 1.0f/3),
+			rand() % 2
+				? static_cast<std::shared_ptr<Material>>(std::make_shared<DiffuseMaterial>(glm::abs(glm::sphericalRand(1.f))))
+				: static_cast<std::shared_ptr<Material>>(std::make_shared<ReflectMaterial>(glm::abs(glm::sphericalRand(1.f))))
+				//: static_cast<std::shared_ptr<Material>>(std::make_shared<ReflectMaterial>(glm::vec3{ 0.6f }/*glm::abs(glm::sphericalRand(1.f))*/))
 		));
 	}
 
 	s.entities.push_back(std::make_unique<Sphere>(
 		glm::vec3{ 0, 0, -200 },
 		200.f,
-		*mat
+		//std::make_shared<DiffuseMaterial>(glm::abs(glm::sphericalRand(1.f)))
+		//std::make_shared<ReflectMaterial>(glm::vec3{ 1 })
+		std::make_shared<ReflectMaterial>(glm::abs(glm::sphericalRand(1.f)))
 	));
 
 	//return std::move(s);
@@ -65,7 +73,7 @@ int main(int argc, char** argv)
 {
 	// Initialise ImageMagick library
 	Magick::InitializeMagick(*argv);
-	srand(4);
+	srand(5);
 
 	if (argc < 4) {
 		fmt::print("Usage: {0} outputFile.png heightInPixels numEntities [-a]\n", argv[0]);
@@ -95,7 +103,7 @@ int main(int argc, char** argv)
 	auto t1 = std::chrono::high_resolution_clock::now();
 	for (uint32_t y = 0; y < height; y++) {
 		for (uint32_t x = 0; x < width; x++) {
-			pix[width * y + x] = PngPixel{ renderer.render(x, y) * 255.f };
+			pix[width * y + x] = PngPixel{ renderer.render(x, y) };
 		}
 	}
 	auto t2 = std::chrono::high_resolution_clock::now();
