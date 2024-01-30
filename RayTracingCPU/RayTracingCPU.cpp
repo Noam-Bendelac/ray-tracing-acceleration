@@ -39,6 +39,20 @@ float randF() {
 	return float(rand()) / RAND_MAX;
 }
 
+
+std::shared_ptr<Material> randMaterial() {
+	auto r = rand() % 3;
+	if (r == 0) {
+		return std::make_shared<DiffuseMaterial>(glm::abs(glm::sphericalRand(1.f)));
+	}
+	else if (r == 1) {
+		return std::make_shared<ReflectMaterial>(glm::abs(glm::sphericalRand(1.f)));
+	}
+	else {
+		return std::make_shared<RefractMaterial>(glm::abs(glm::sphericalRand(1.f)), 2.0f);
+	}
+}
+
 void initScene(Scene& s, uint32_t numEntities) {
 	// TODO scene cleanup function, maybe destructor, fix leak
 
@@ -48,19 +62,18 @@ void initScene(Scene& s, uint32_t numEntities) {
 		s.entities.push_back(std::make_unique<Sphere>(
 			glm::vec3{ randF() * 16. - 8., randF() * 20. - 10., randF() * 10. - 2. },
 			4.f/powf(float(numEntities), 1.0f/3),
-			rand() % 2
-				? static_cast<std::shared_ptr<Material>>(std::make_shared<DiffuseMaterial>(glm::abs(glm::sphericalRand(1.f))))
-				: static_cast<std::shared_ptr<Material>>(std::make_shared<ReflectMaterial>(glm::abs(glm::sphericalRand(1.f))))
-				//: static_cast<std::shared_ptr<Material>>(std::make_shared<ReflectMaterial>(glm::vec3{ 0.6f }/*glm::abs(glm::sphericalRand(1.f))*/))
+			randMaterial()
 		));
 	}
 
+	glm::vec3 floorColor = glm::abs(glm::sphericalRand(1.f));
+	floorColor = glm::vec3{ floorColor.b, floorColor.g, floorColor.r };
 	s.entities.push_back(std::make_unique<Sphere>(
 		glm::vec3{ 0, 0, -200 },
 		200.f,
-		//std::make_shared<DiffuseMaterial>(glm::abs(glm::sphericalRand(1.f)))
+		std::make_shared<DiffuseMaterial>(floorColor)
 		//std::make_shared<ReflectMaterial>(glm::vec3{ 1 })
-		std::make_shared<ReflectMaterial>(glm::abs(glm::sphericalRand(1.f)))
+		//std::make_shared<ReflectMaterial>(glm::abs(glm::sphericalRand(1.f)))
 	));
 
 	//return std::move(s);

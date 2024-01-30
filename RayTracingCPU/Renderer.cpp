@@ -42,8 +42,8 @@ vec3 Renderer::render(uint32_t x, uint32_t y) {
 
 
 vec3 Renderer::renderRay(Ray const& ray, uint32_t iterDepth) {
-	if (iterDepth > 5) {
-		return vec3{ 0.1 };
+	if (iterDepth > 7) {
+		return vec3{ 0.1f };
 	}
 	auto hit = scene.raycast(ray);
 	return hit
@@ -55,7 +55,7 @@ vec3 Renderer::renderRay(Ray const& ray, uint32_t iterDepth) {
 				[this](Ray const& ray2) { return scene.raycast(ray2).transform([](Hit const& hit) { return hit.t; }); }
 			);
 		})
-		.value_or(vec3{ 0.1 });
+		.value_or(vec3{ 0.1f });
 }
 
 

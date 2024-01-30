@@ -56,4 +56,19 @@ public:
 	) override;
 };
 
+class RefractMaterial : public Material {
+public:
+	glm::vec3 transmitColor;
+	float indexOfRefraction;
+
+	RefractMaterial(glm::vec3 transmitColor, float ior) : transmitColor(transmitColor), indexOfRefraction(ior) { }
+
+	glm::vec3 shade(
+		const SurfacePoint& p,
+		const Ray& viewRay,
+		std::function<glm::vec3(Ray const&)> queryColor,
+		std::function<std::optional<bool>(Ray const&)> queryDepth
+	) override;
+};
+
 
