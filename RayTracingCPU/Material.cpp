@@ -18,7 +18,7 @@ vec3 DiffuseMaterial::shade(
 	std::function<std::optional<bool>(Ray const&)> queryDepth
 ) {
 	vec3 lightDir = glm::normalize(vec3{ -1, -1, 1 });
-	vec3 dirLightIn = queryDepth(Ray{ .origin = p.pos + EPSILON * lightDir, .direction = lightDir }) ? vec3{ 0 } : vec3{ 1 };
+	vec3 dirLightIn = queryDepth(Ray(p.pos + EPSILON * lightDir, lightDir)) ? vec3{ 0 } : vec3{ 1 };
 	float lambert = glm::clamp(glm::dot(p.norm, lightDir), 0.f, 1.f);
 	vec3 ambient = vec3{ 0.1f };
 	return (dirLightIn * lambert + ambient) * baseColor;
@@ -32,7 +32,7 @@ vec3 ReflectMaterial::shade(
 	std::function<std::optional<bool>(Ray const&)> queryDepth
 ) {
 	vec3 reflectDir = glm::reflect(viewRay.direction, p.norm);
-	vec3 lightIn = queryColor(Ray{ .origin = p.pos + EPSILON * reflectDir, .direction = reflectDir });
+	vec3 lightIn = queryColor(Ray(p.pos + EPSILON * reflectDir, reflectDir));
 	
 	return lightIn * specularColor;
 }
@@ -52,7 +52,7 @@ vec3 RefractMaterial::shade(
 		? glm::refract(viewRay.direction, -p.norm, indexOfRefraction)
 		: glm::refract(viewRay.direction, p.norm, 1.0f / indexOfRefraction);
 	if (refractDir == vec3{ 0 }) refractDir = glm::reflect(viewRay.direction, p.norm);
-	vec3 lightIn = queryColor(Ray{ .origin = p.pos + EPSILON * refractDir, .direction = refractDir });
+	vec3 lightIn = queryColor(Ray(p.pos + EPSILON * refractDir, refractDir));
 
 	vec3 attenuationOut = lightEntering ? glm::pow(transmitColor, vec3{ glm::distance(viewRay.origin, p.pos)/10.f }) : vec3{ 1.f };
 

@@ -34,7 +34,7 @@ vec3 Renderer::render(uint32_t x, uint32_t y) {
 	vec3 ro = camera.position;
 	vec3 rd = normalize(ro - sensorPos);
 	
-	auto ray = Ray{ .origin = ro, .direction = rd };
+	auto ray = Ray(ro, rd);
 
 
 	return renderRay(ray, 0);
