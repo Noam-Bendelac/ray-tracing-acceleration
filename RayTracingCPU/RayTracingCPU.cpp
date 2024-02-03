@@ -27,13 +27,6 @@ public:
 };
 
 
-struct PngPixel {
-	/*uint8_t rgb[3];*/
-	glm::u8vec3 rgb;
-	PngPixel() : rgb() {}
-	explicit PngPixel(glm::vec3 f_rgb) : rgb(glm::clamp(f_rgb, 0.f, 1.f) * 255.f) {}
-};
-
 
 float randF() {
 	return float(rand()) / RAND_MAX;
@@ -104,8 +97,6 @@ int main(int argc, char** argv)
 	uint32_t width = uint32_t(height * (16./9.));
 
 
-	//uint8_t(*pix)[3] = new uint8_t[height * width][3];
-	PngPixel* pix = new PngPixel[height * width];
 
 	Scene scene{ acceleration };
 	initScene(scene, numEntities);
@@ -114,18 +105,14 @@ int main(int argc, char** argv)
 	Renderer renderer{width, height, scene};
 
 	auto t1 = std::chrono::high_resolution_clock::now();
-	for (uint32_t y = 0; y < height; y++) {
-		for (uint32_t x = 0; x < width; x++) {
-			pix[width * y + x] = PngPixel{ renderer.render(x, y) };
-		}
-	}
+	auto pix = renderer.renderFrame();
 	auto t2 = std::chrono::high_resolution_clock::now();
 	std::chrono::duration<double, std::milli> ms_double = t2 - t1;
-	fmt::print("elapsed: {} seconds\n", ms_double.count()/1000.);
+	fmt::print("elapsed: {} seconds\n", ms_double.count() / 1000.);
 
 	// Create Image object and read in from pixel data above
 	Magick::Image image;
-	image.read(width, height, "RGB", Magick::CharPixel, pix);
+	image.read(width, height, "RGB", Magick::CharPixel, pix.get());
 
 	// Write the image to a file - change extension if you want a GIF or JPEG
 	image.write(outputFile);

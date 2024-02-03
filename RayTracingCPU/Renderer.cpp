@@ -6,6 +6,9 @@
 #include "Entity.h"
 
 #include <glm/gtx/norm.hpp>
+#include <thread>
+#include <mutex>
+#include <vector>
 
 
 using glm::vec3;
@@ -14,12 +17,33 @@ using glm::vec2;
 
 
 
+std::unique_ptr<PngPixel[]> Renderer::renderFrame() {
+	auto pix = std::unique_ptr<PngPixel[]>(new PngPixel[height * width]);
+
+	std::vector<std::thread> pool;
+
+	auto numThreads = std::thread::hardware_concurrency();
+	for (uint32_t i = 0; i < numThreads; ++i) {
+		pool.emplace_back([i, numThreads, &pix, this]() {
+			for (uint32_t y = i; y < height; y += numThreads) {
+				for (uint32_t x = 0; x < width; x++) {
+					pix[width * y + x] = PngPixel{ renderPixel(x, y) };
+				}
+			}
+		});
+	}
+
+	for (auto& t : pool) {
+		t.join();
+	}
+
+	return pix;
+}
 
 
 
 
-
-vec3 Renderer::render(uint32_t x, uint32_t y) {
+vec3 Renderer::renderPixel(uint32_t x, uint32_t y) const {
 	// center each ray origin inside the pixel, so add 0.5
 	// height-y so -1 is at the bottom
 	vec2 ndc(vec2{ x + 0.5, height - (y + 0.5) } / vec2{ width, height } * 2.f - vec2{ 1 });
@@ -41,7 +65,7 @@ vec3 Renderer::render(uint32_t x, uint32_t y) {
 }
 
 
-vec3 Renderer::renderRay(Ray const& ray, uint32_t iterDepth) {
+vec3 Renderer::renderRay(Ray const& ray, uint32_t iterDepth) const {
 	if (iterDepth > 7) {
 		return vec3{ 0.1f };
 	}
